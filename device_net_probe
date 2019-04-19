@@ -1,0 +1,49 @@
+###VARIABLES
+:local wfSpeedTestAddress value="10.10.10.10."
+:local wfInterfaceNum value="ether2"
+:local wfGetExternalIPhost value="http://getip.onlinez.net/index.php"
+:local botTelegram value="bot123456789:API"
+:local botMgId value="-123456789"
+#################
+/tool fetch url=$wfGetExternalIPhost dst-path=externalip.txt; delay 1
+:local getExIP ([/file get externalip.txt contents])
+:local PortRate ([/interface ethernet monitor $wfInterfaceNum once as-value]->"rate")
+:local getInIP [/ip address get [find interface="$wfInterfaceNum"] address ];
+
+:local msgTextline value="---------------------------"
+:local msgGreeting value="Hello! Your internal IP is: $getInIP and external IP is: $getExIP"
+:local msgPortRate value="Link speed is: $PortRate"
+:local msgWait value="Please wait approximately 1 minute for bandwidth test..."
+
+:log info "$msgTextline"
+:log info "$msgGreeting"
+:log info "$msgPortRate"
+:log info "$msgWait"
+
+/tool fetch url="https://api.telegram.org/$botTelegram/sendMessage\?chat_id=$botMgId&text=$msgTextline%0A$msgGreeting%0A$msgPortRate%0A$msgWait" keep-result=no
+
+
+:local txTest
+:local rxTest
+:tool bandwidth-test address=$wfSpeedTestAddress protocol=tcp direction=transmit duration=5 do={
+set txTest $("tx-10-second-average")
+}
+:tool bandwidth-test address=$wfSpeedTestAddress protocol=tcp direction=receive duration=5 do={
+set rxTest $("rx-10-second-average")
+}
+:local uploadSpeed ("Upload: ".($txTest/1024000)." Mbps")
+:local downloadSpeed ("Download: ".($rxTest/1024000)." Mbps")
+
+:local PingResult
+:set PingResult [ping $wfSpeedTestAddress count=200 interval=0.05 size=1024]
+:local PingResultPercent ((200-$PingResult)/10)
+
+:local msgPacket value="Packet loss $PingResultPercent%"
+:local msgUpload value="$uploadSpeed"
+:local msgDwload value="$downloadSpeed"
+
+:log info "$msgPacket"
+:log info "$msgUpload"
+:log info "$msgDwload"
+:log info "$msgTextline"
+/tool fetch url="https://api.telegram.org/$botTelegram/sendMessage\?chat_id=$botMgId&text=$msgPacket%0A$msgUpload%0A$msgDwload%0A$msgTextline" keep-result=no
