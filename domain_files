@@ -1,0 +1,34 @@
+;------------template_soa.$1
+$ORIGIN example.lv.
+$TTL    60
+@               IN      SOA     ns1.example.lv. root.example.lv. (
+                2019040602      ; serial
+                1800            ; refresh
+                1800            ; retry
+                1209600         ; expire
+                604800 )        ; minimum
+example.lv.     IN      NS              ns1.example.lv.
+example.lv.     IN      NS              ns2.example.lv.
+example.lv.     IN      NS              ns3.example.lv.
+ns1             IN      A               10.10.10.100
+ns2             IN      A               10.10.10.200
+ns3             IN      A               10.10.10.210
+ns              IN      CNAME           ns1
+mail            IN      MX      50      mail.example.lv.
+example.lv.     IN      MX      50      mail.example.lv.
+imap            IN      CNAME           www
+@               IN      TXT             "v=spf1 +a +mx ip4:10.10.10.4 ~all"
+
+
+;----------template_example$1
+www                     IN      A       10.10.1.2   ;ISP1
+www                     IN      A       10.10.1.3   ;ISP2
+www3                    IN      A       10.10.1.2   ;ISP1
+www3                    IN      A       10.10.1.3   ;ISP2
+@                       IN      A       10.10.1.2   ;ISP1
+@                       IN      A       10.10.1.3   ;ISP2
+ftp                     IN      A       10.10.1.3   ;ISP2
+ftp                     IN      A       10.10.1.2   ;ISP1
+mail                    IN      A       10.10.1.2   ;ISP1
+mail                    IN      A       10.10.1.3   ;ISP2
+
